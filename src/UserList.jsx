@@ -1,13 +1,18 @@
 import { useState } from "react";
 
 export default function UserList() {
-  const [users] = useState(["Alice", "Bob", "Charlie"]);
+  const [users, setUsers] = useState(["Alice", "Bob", "Charlie"]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const showDetail = selectedUser !== null ? true : false;
 
-  const filteredUsers = users.filter((user) => user === searchTerm);
+
+  const showDetail = selectedUser !== null;
+
+  const filteredUsers = users.filter((user) => {
+    const value = searchTerm.toLowerCase()
+    return user.toLowerCase().includes(value)
+  });
 
   const handleHover = (user) => {
     setTimeout(() => {
@@ -15,17 +20,21 @@ export default function UserList() {
     }, 1000);
   };
 
+  const handledelete = (index) => {
+    setUsers((prevUser) => prevUser.filter((_, i) => i !== index))
+  }
+
   return (
-    <div className="mt-4">
+    <div className="mt-4 flex justify-center items-center flex-col space-y-3">
       <h2 className="text-xl font-bold">Users</h2>
 
-      <input type="text" value={searchTerm} className="border p-2 mt-2" />
+      <input type="text" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="border p-2 mt-2" />
 
-      <ul>
+      <ul className="flex gap-4 justify-center items-center my-10">
         {(filteredUsers.length > 0 ? filteredUsers : users).map(
           (user, index) => (
             <li
-              key={index + Math.random()}
+              key={`${user}-${index}`}
               onClick={() => {
                 setSelectedUser(user);
               }}
@@ -36,9 +45,7 @@ export default function UserList() {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  const newUsers = [...users];
-                  newUsers.splice(index, 1);
-                  setUsers(newUsers);
+                 handledelete(index)
                 }}
                 className="ml-2 bg-red-500 text-white px-2 py-1 rounded"
               >
@@ -49,7 +56,7 @@ export default function UserList() {
         )}
       </ul>
 
-      {showDetails && (
+      {showDetail && (
         <div className="mt-2 p-2 bg-yellow-100">
           Selected: {selectedUser}
           <p>Name length: {selectedUser.length}</p>
